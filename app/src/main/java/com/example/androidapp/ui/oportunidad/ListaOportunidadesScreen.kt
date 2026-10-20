@@ -1,5 +1,6 @@
 package com.example.androidapp.ui.oportunidad
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,8 +13,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import com.example.androidapp.datos.local.OportunidadEntity
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +90,25 @@ fun OportunidadItem(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
+            // Mostrar imagen si existe
+            oportunidad.fotoUri?.let { path ->
+                val bitmap = remember(path) {
+                    BitmapFactory.decodeFile(path)?.asImageBitmap()
+                }
+                bitmap?.let {
+                    Image(
+                        bitmap = it,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .clip(RoundedCornerShape(6.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
             Text(
                 text = oportunidad.nombre,
                 style = MaterialTheme.typography.titleMedium

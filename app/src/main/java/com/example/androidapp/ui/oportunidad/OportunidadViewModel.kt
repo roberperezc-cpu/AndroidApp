@@ -21,6 +21,7 @@ data class OportunidadUiState(
     val prioridad: String = "",
     val potencial: String = "",
     val estado: String = "Evento identificado",
+    val fotoUri: String? = null,
     val observaciones: String = "",
 
     // Errores de validación
@@ -46,6 +47,10 @@ class OportunidadViewModel(private val repository: OportunidadRepository) : View
 
     private val _uiState = MutableStateFlow(OportunidadUiState())
     val uiState: StateFlow<OportunidadUiState> = _uiState.asStateFlow()
+
+    fun onFotoUriChange(path: String?) {
+        _uiState.update { it.copy(fotoUri = path) }
+    }
 
     fun onNombreChange(value: String) {
         _uiState.update { it.copy(nombre = value, nombreError = if (value.isBlank()) "El nombre es obligatorio" else null) }
@@ -93,6 +98,7 @@ class OportunidadViewModel(private val repository: OportunidadRepository) : View
                         prioridad = oportunidad.prioridad,
                         potencial = oportunidad.potencial,
                         estado = oportunidad.estado,
+                        fotoUri = oportunidad.fotoUri,
                         observaciones = oportunidad.observaciones
                     )
                 }
@@ -103,6 +109,8 @@ class OportunidadViewModel(private val repository: OportunidadRepository) : View
     fun limpiarFormulario() {
         _uiState.value = OportunidadUiState()
     }
+
+
 
     fun guardarOportunidad() {
         val current = _uiState.value
@@ -139,6 +147,7 @@ class OportunidadViewModel(private val repository: OportunidadRepository) : View
                 prioridad = current.prioridad,
                 potencial = current.potencial,
                 estado = current.estado,
+                fotoUri = current.fotoUri,
                 observaciones = current.observaciones
             )
             repository.guardarOportunidad(entidad)

@@ -14,5 +14,6 @@ data class OportunidadEntity(
     val prioridad: String,
     val potencial: String,
     val estado: String = "Evento identificado",
-    val observaciones: String = ""
+    val observaciones: String = "",
+    val fotoUri: String? = null
 )
