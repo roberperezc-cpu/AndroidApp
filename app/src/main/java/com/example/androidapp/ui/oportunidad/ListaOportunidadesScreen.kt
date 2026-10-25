@@ -22,19 +22,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
 
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaOportunidadesScreen(
     viewModel: OportunidadViewModel,
     onAgregarClick: () -> Unit,
-    onEditarClick: (Int) -> Unit
+    onEditarClick: (Int) -> Unit,
+    onCerrarSesion: () -> Unit
 ) {
     val lista by viewModel.listaOportunidades.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Oportunidades") }
+                title = { Text("Oportunidades") },
+                actions = {
+                    IconButton(onClick = onCerrarSesion) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "Cerrar sesión"
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {

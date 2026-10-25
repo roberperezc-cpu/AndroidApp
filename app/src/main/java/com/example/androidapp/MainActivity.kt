@@ -9,18 +9,31 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.androidapp.datos.local.AppDatabase
 import com.example.androidapp.navegacion.AppNavigation
 import com.example.androidapp.repository.OportunidadRepository
+import com.example.androidapp.repository.UserRepository
+import com.example.androidapp.ui.auth.AuthViewModel
 import com.example.androidapp.ui.oportunidad.OportunidadViewModel
 import com.example.androidapp.ui.theme.AndroidAppTheme
+
 class MainActivity : ComponentActivity() {
 
     private val database by lazy { AppDatabase.getDatabase(this) }
-    private val repository by lazy { OportunidadRepository(database.oportunidadDao()) }
+    private val oportunidadRepository by lazy { OportunidadRepository(database.oportunidadDao()) }
+    private val userRepository by lazy { UserRepository(database.userDao()) }
 
-    private val viewModel: OportunidadViewModel by viewModels {
+    private val oportunidadViewModel: OportunidadViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return OportunidadViewModel(repository) as T
+                return OportunidadViewModel(oportunidadRepository) as T
+            }
+        }
+    }
+
+    private val authViewModel: AuthViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return AuthViewModel(userRepository) as T
             }
         }
     }
@@ -29,7 +42,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AndroidAppTheme {
-                AppNavigation(viewModel = viewModel)
+                AppNavigation(
+                    oportunidadViewModel = oportunidadViewModel,
+                    authViewModel = authViewModel
+                )
             }
         }
     }

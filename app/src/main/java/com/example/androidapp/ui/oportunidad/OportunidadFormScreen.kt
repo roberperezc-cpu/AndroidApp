@@ -39,6 +39,21 @@ fun OportunidadFormScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    val tiposOportunidad = listOf(
+        "Evento corporativo",
+        "Feria",
+        "Alianza estratégica",
+        "Licitación",
+        "Venta directa",
+        "Otro"
+    )
+
+    val prioridadesOportunidad = listOf(
+        "Alta",
+        "Media",
+        "Baja"
+    )
+
     // Launcher para abrir la cámara nativa
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
@@ -99,13 +114,13 @@ fun OportunidadFormScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = state.tipo,
-                onValueChange = { viewModel.onTipoChange(it) },
-                label = { Text("Tipo (ej. Evento corporativo, Feria) *") },
+            SelectableDropdownField(
+                label = "Tipo de Oportunidad *",
+                options = tiposOportunidad,
+                selectedOption = state.tipo,
+                onOptionSelected = { viewModel.onTipoChange(it) },
                 isError = state.tipoError != null,
-                supportingText = { state.tipoError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
+                supportingText = { state.tipoError?.let { Text(it) } }
             )
 
             OutlinedTextField(
@@ -127,13 +142,13 @@ fun OportunidadFormScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = state.prioridad,
-                onValueChange = { viewModel.onPrioridadChange(it) },
-                label = { Text("Prioridad (Alta, Media, Baja) *") },
+            SelectableDropdownField(
+                label = "Prioridad *",
+                options = prioridadesOportunidad,
+                selectedOption = state.prioridad,
+                onOptionSelected = { viewModel.onPrioridadChange(it) },
                 isError = state.prioridadError != null,
-                supportingText = { state.prioridadError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
+                supportingText = { state.prioridadError?.let { Text(it) } }
             )
 
             OutlinedTextField(
@@ -184,7 +199,6 @@ fun OportunidadFormScreen(
 
             OutlinedButton(
                 onClick = {
-                    // Verificar si el permiso ya fue concedido
                     val tienePermiso = ContextCompat.checkSelfPermission(
                         context,
                         Manifest.permission.CAMERA
@@ -203,7 +217,6 @@ fun OportunidadFormScreen(
                 Text(if (bitmap == null) "Tomar Foto de Evidencia" else "Cambiar Foto")
             }
 
-
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
@@ -216,6 +229,52 @@ fun OportunidadFormScreen(
                 } else {
                     Text("Guardar Oportunidad")
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectableDropdownField(
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit,
+    isError: Boolean = false,
+    supportingText: @Composable (() -> Unit)? = null
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            isError = isError,
+            supportingText = supportingText,
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                )
             }
         }
     }
