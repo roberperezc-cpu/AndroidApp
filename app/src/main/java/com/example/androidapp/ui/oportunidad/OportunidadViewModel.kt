@@ -3,6 +3,8 @@ package com.example.androidapp.ui.oportunidad
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidapp.datos.local.OportunidadEntity
+import com.example.androidapp.network.Personaje
+import com.example.androidapp.network.RetrofitClient
 import com.example.androidapp.repository.OportunidadRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,6 +49,20 @@ class OportunidadViewModel(private val repository: OportunidadRepository) : View
 
     private val _uiState = MutableStateFlow(OportunidadUiState())
     val uiState: StateFlow<OportunidadUiState> = _uiState.asStateFlow()
+
+    private val _personajesExternos = MutableStateFlow<List<Personaje>>(emptyList())
+    val personajesExternos: StateFlow<List<Personaje>> = _personajesExternos.asStateFlow()
+
+    fun cargarPersonajesExternos() {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.externalApi.obtenerPersonajesExternos()
+                _personajesExternos.value = response.results
+            } catch (e: Exception) {
+                _personajesExternos.value = emptyList()
+            }
+        }
+    }
 
     fun onFotoUriChange(path: String?) {
         _uiState.update { it.copy(fotoUri = path) }
@@ -108,6 +124,12 @@ class OportunidadViewModel(private val repository: OportunidadRepository) : View
 
     fun limpiarFormulario() {
         _uiState.value = OportunidadUiState()
+    }
+
+    fun eliminarOportunidad(oportunidad: OportunidadEntity) {
+        viewModelScope.launch {
+            repository.eliminarOportunidad(oportunidad)
+        }
     }
 
 

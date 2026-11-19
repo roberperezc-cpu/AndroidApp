@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +30,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.example.androidapp.datos.local.OportunidadEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -228,6 +230,57 @@ fun OportunidadFormScreen(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
                 } else {
                     Text("Guardar Oportunidad")
+                }
+            }
+
+            if (state.id != 0) {
+                var showDeleteDialog by remember { mutableStateOf(false) }
+
+                if (showDeleteDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteDialog = false },
+                        title = { Text("Eliminar Oportunidad") },
+                        text = { Text("¿Estás seguro de que deseas eliminar esta oportunidad?") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showDeleteDialog = false
+                                    val entidad = OportunidadEntity(
+                                        id = state.id,
+                                        nombre = state.nombre,
+                                        tipo = state.tipo,
+                                        descripcion = state.descripcion,
+                                        fuente = state.fuente,
+                                        prioridad = state.prioridad,
+                                        potencial = state.potencial,
+                                        estado = state.estado,
+                                        fotoUri = state.fotoUri,
+                                        observaciones = state.observaciones
+                                    )
+                                    viewModel.eliminarOportunidad(entidad)
+                                    onVolver()
+                                }
+                            ) {
+                                Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDeleteDialog = false }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { showDeleteDialog = true },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Eliminar Oportunidad")
                 }
             }
         }

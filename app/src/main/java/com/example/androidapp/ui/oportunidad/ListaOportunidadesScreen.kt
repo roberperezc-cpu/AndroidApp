@@ -23,6 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
 
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,12 +38,62 @@ fun ListaOportunidadesScreen(
     onCerrarSesion: () -> Unit
 ) {
     val lista by viewModel.listaOportunidades.collectAsState()
+    val personajesExternos by viewModel.personajesExternos.collectAsState()
+    var showExternalDialog by remember { mutableStateOf(false) }
+
+    if (showExternalDialog) {
+        AlertDialog(
+            onDismissRequest = { showExternalDialog = false },
+            title = { Text("Personajes Externos (Rick & Morty)") },
+            text = {
+                if (personajesExternos.isEmpty()) {
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(450.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(personajesExternos) { personaje ->
+                            Card(modifier = Modifier.fillMaxWidth()) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(text = personaje.name, style = MaterialTheme.typography.titleMedium)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(text = "Especie: ${personaje.species}", style = MaterialTheme.typography.bodyMedium)
+                                    Text(text = "Estado: ${personaje.status}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showExternalDialog = false }) {
+                    Text("Cerrar")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Oportunidades") },
                 actions = {
+                    IconButton(onClick = {
+                        viewModel.cargarPersonajesExternos()
+                        showExternalDialog = true
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Public,
+                            contentDescription = "API Externa"
+                        )
+                    }
                     IconButton(onClick = onCerrarSesion) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
@@ -77,7 +132,8 @@ fun ListaOportunidadesScreen(
                 items(lista) { oportunidad ->
                     OportunidadItem(
                         oportunidad = oportunidad,
-                        onClick = { onEditarClick(oportunidad.id) }
+                        onClick = { onEditarClick(oportunidad.id) },
+                        onDeleteClick = { viewModel.eliminarOportunidad(oportunidad) }
                     )
                 }
             }
@@ -88,8 +144,34 @@ fun ListaOportunidadesScreen(
 @Composable
 fun OportunidadItem(
     oportunidad: OportunidadEntity,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar Oportunidad") },
+            text = { Text("¿Estás seguro de que deseas eliminar la oportunidad \"${oportunidad.nombre}\"?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteClick()
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,6 +183,25 @@ fun OportunidadItem(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = oportunidad.nombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = { showDeleteDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             // Mostrar imagen si existe
             oportunidad.fotoUri?.let { path ->
                 val bitmap = remember(path) {
@@ -121,14 +222,10 @@ fun OportunidadItem(
             }
 
             Text(
-                text = oportunidad.nombre,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
                 text = "Tipo: ${oportunidad.tipo}",
                 style = MaterialTheme.typography.bodyMedium
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
