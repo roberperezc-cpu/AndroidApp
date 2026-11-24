@@ -176,4 +176,15 @@ class OportunidadViewModel(private val repository: OportunidadRepository) : View
             _uiState.update { it.copy(guardando = false, guardadoExitosamente = true) }
         }
     }
+
+
+    init {
+        sincronizarOportunidades()
+    }
+
+    fun sincronizarOportunidades() {
+        viewModelScope.launch {
+            repository.sincronizarConServidor()
+        }
+    }
 }

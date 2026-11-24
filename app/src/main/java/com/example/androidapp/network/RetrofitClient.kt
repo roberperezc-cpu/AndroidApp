@@ -4,7 +4,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL_MICROSERVICE = "https://microservice.example.com/api/"
+    // Reemplaza 192.168.1.15 por tu IPv4 local (o 10.0.2.2 si usas emulador)
+    private const val BASE_URL_MICROSERVICE = "http://192.168.1.9:8080/api/"
     private const val BASE_URL_EXTERNAL = "https://rickandmortyapi.com/api/"
 
     val microserviceApi: ApiService by lazy {
